@@ -6,10 +6,10 @@ import torch
 def tensor_to_string(tensor):
     """Converts tensor data to a string representation."""
     if tensor is not None:
-        if tensor.ndim > 1 or tensor.size > 4:  # Adjust based on preference
+        if tensor.ndim > 6 or tensor.size > 6:  # Adjust based on preference
             return f"shape {tensor.shape}"
         else:
-            return ', '.join(f"{x:.4f}" for x in tensor.flatten())
+            return np.array2string(tensor, formatter={'float_kind': lambda x: f"{x:.4f}"})
     else:
         return "None"
 
@@ -60,13 +60,10 @@ tensor_d = (([9,8,1]))
 out1 = tensor_a + tensor_b
 new = Tensor([[1, 2, 3], [4, 5, 6]])
 out2 = out1*new
-print("Out1", out1)
-print("Out2",out2)
 out3 = tensor_c + tensor_d
 outmid = out2+out2+out2
 out = out3 + outmid
 print("Out", out)
 out.backward()  
 graph = draw_dot(out)
-# print(tensor_d)
 

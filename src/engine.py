@@ -15,6 +15,7 @@ class Tensor:
        self.requires_grad = requires_grad
        self.grad = np.zeros_like(self.data) if self.requires_grad else None
        self._backward = lambda: None
+       self.shape = self.data.shape
 
     def __repr__(self):
         # return f"Tensor(data={self.data}, dtype={type(self.data)})"
@@ -37,9 +38,20 @@ class Tensor:
         
         def _backward():
             if self.requires_grad:
-                self.grad += out.grad
+                grad_self = out.grad
+                if grad_self.shape != self.shape:
+                    for axis, (dim_self, dim_out) in enumerate(zip(self.shape, grad_self.shape)):
+                        if dim_self != dim_out:
+                            grad_self = grad_self.sum(axis=axis, keepdims=True)
+                self.grad = self.grad + grad_self
+
             if other.requires_grad:
-                other.grad += out.grad
+                grad_other = out.grad
+                if grad_other.shape != other.shape:
+                    for axis, (dim_other, dim_out) in enumerate(zip(other.shape, grad_other.shape)):
+                        if dim_other != dim_out:
+                            grad_other = grad_other.sum(axis=axis, keepdims=True)
+                other.grad = other.grad + grad_other
         out._backward = _backward
         return out
     
@@ -52,11 +64,21 @@ class Tensor:
 
         def _backward():
             if self.requires_grad:
-                self.grad += out.grad
-            if other.requires_grad:
-                other.grad += out.grad
-        out._backward = _backward
+                grad_self = out.grad
+                if grad_self.shape != self.shape:
+                    for axis, (dim_self, dim_out) in enumerate(zip(self.shape, grad_self.shape)):
+                        if dim_self != dim_out:
+                            grad_self = grad_self.sum(axis=axis, keepdims=True)
+                self.grad = self.grad + grad_self
 
+            if other.requires_grad:
+                grad_other = out.grad
+                if grad_other.shape != other.shape:
+                    for axis, (dim_other, dim_out) in enumerate(zip(other.shape, grad_other.shape)):
+                        if dim_other != dim_out:
+                            grad_other = grad_other.sum(axis=axis, keepdims=True)
+                other.grad = other.grad + grad_other
+        out._backward = _backward
         return out
     
     def __mul__(self, other):
@@ -68,9 +90,21 @@ class Tensor:
 
         def _backward():
             if self.requires_grad:
-                self.grad += out.grad*other.data 
+                grad_self = out.grad * other.data
+                if grad_self.shape != self.shape:
+                    for axis, (dim_self, dim_out) in enumerate(zip(self.shape, grad_self.shape)):
+                        if dim_self != dim_out:
+                            grad_self = grad_self.sum(axis=axis, keepdims=True)
+                self.grad = self.grad + grad_self if self.grad is not None else grad_self
+
             if other.requires_grad:
-                other.grad += out.grad*self.data 
+                grad_other = out.grad * self.data
+                if grad_other.shape != other.shape:
+                    for axis, (dim_other, dim_out) in enumerate(zip(other.shape, grad_other.shape)):
+                        if dim_other != dim_out:
+                            grad_other = grad_other.sum(axis=axis, keepdims=True)
+                other.grad = other.grad + grad_other if other.grad is not None else grad_other
+        
         out._backward = _backward
         return out
     
