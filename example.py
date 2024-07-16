@@ -1,15 +1,14 @@
-from engine import Tensor
+import metagrad as mg
 import numpy as np
 from graphviz import Digraph
-import torch
 
 def tensor_to_string(tensor):
     """Converts tensor data to a string representation."""
     if tensor is not None:
-        if tensor.ndim > 1 or tensor.size > 4:  # Adjust based on preference
+        if tensor.ndim > 6 or tensor.size > 6:  # Adjust based on preference
             return f"shape {tensor.shape}"
         else:
-            return ', '.join(f"{x:.4f}" for x in tensor.flatten())
+            return np.array2string(tensor, formatter={'float_kind': lambda x: f"{x:.4f}"})
     else:
         return "None"
 
@@ -53,20 +52,17 @@ def draw_dot(root, format='svg', rankdir='LR'):
     return dot
 
 # Example usage
-tensor_a = Tensor(np.array([1,2,1]))
-tensor_b = Tensor(np.array([3,1,1]))
-tensor_c = Tensor(np.array([5,6,1]))
-tensor_d = (([9,8,1]))
-out1 = tensor_a + tensor_b
-new = Tensor([[1, 2, 3], [4, 5, 6]])
-out2 = out1*new
-print("Out1", out1)
-print("Out2",out2)
+tensor_a = mg.Tensor(np.array([1,2,1]))
+tensor_b = ([3,1,1])
+tensor_c = (([5,6,1]))
+tensor_d = mg.Tensor(([9,8,1]))
+out1 = tensor_a - tensor_b
+new = ([[1, 2, 3], [4, 5, 6]])
+out2 = out1/new
 out3 = tensor_c + tensor_d
 outmid = out2+out2+out2
-out = out3 + outmid
+outout = out3 + outmid
+out = outout*(3)
 print("Out", out)
 out.backward()  
 graph = draw_dot(out)
-# print(tensor_d)
-
